@@ -1,0 +1,197 @@
+---
+title: "Statistics 650 - Project"
+author: "Nurahmet Emin"
+date: "Wednesday October 13, 2019"
+output:
+  word_document: default
+  html_notebook: default
+---
+```{r}
+
+library(tidyverse)
+library(ggmap)
+library(skimr)
+library(lubridate)
+library(textreadr)
+library(nycflights13)
+```
+
+##Question1.
+
+**Answer:**
+
+I have used the data of months Jan-May 2018 as below.
+
+```{r message=FALSE}
+flight_bay201801 <- read_csv(file="./data/On_Time_Reporting_Carrier_On_Time_Performance_(1987_present)_2018_1.csv")
+flight_bay201802 <- read_csv(file="./data/On_Time_Reporting_Carrier_On_Time_Performance_(1987_present)_2018_2.csv")
+flight_bay201803 <- read_csv(file="./data/On_Time_Reporting_Carrier_On_Time_Performance_(1987_present)_2018_3.csv")
+flight_bay201804 <- read_csv(file="./data/On_Time_Reporting_Carrier_On_Time_Performance_(1987_present)_2018_4.csv")
+flight_bay201805 <- read_csv(file="./data/On_Time_Reporting_Carrier_On_Time_Performance_(1987_present)_2018_5.csv")
+
+```
+
+
+```{r}
+bay_flight01<- flight_bay201801%>% filter(Origin=="SFO" | Origin=="SJC"| Origin=="OAK")%>%select(c(Year:Reporting_Airline,Tail_Number,Origin:OriginState,Dest:DestState,CRSDepTime:DepDel15,CRSArrTime:ArrDel15,AirTime,Distance))
+bay_flight02<- flight_bay201802%>% filter(Origin=="SFO" |Origin=="SJC"|Origin=="OAK")%>%select(c(Year:Reporting_Airline,Tail_Number,Origin:OriginState,Dest:DestState,CRSDepTime:DepDel15,CRSArrTime:ArrDel15,AirTime,Distance))
+bay_flight03<- flight_bay201803%>% filter(Origin=="SFO" | Origin=="SJC"|Origin=="OAK")%>%select(c(Year:Reporting_Airline,Tail_Number,Origin:OriginState,Dest:DestState,CRSDepTime:DepDel15,CRSArrTime:ArrDel15,AirTime,Distance))
+bay_flight04<- flight_bay201804%>% filter(Origin=="SFO" | Origin=="SJC"|Origin=="OAK")%>%select(c(Year:Reporting_Airline,Tail_Number,Origin:OriginState,Dest:DestState,CRSDepTime:DepDel15,CRSArrTime:ArrDel15,AirTime,Distance))
+bay_flight05<- flight_bay201805%>% filter(Origin=="SFO" | Origin=="SJC"|Origin=="OAK")%>%select(c(Year:Reporting_Airline,Tail_Number,Origin:OriginState,Dest:DestState,CRSDepTime:DepDel15,CRSArrTime:ArrDel15,AirTime,Distance))
+
+```
+
+##Question2.
+
+**Answer:**
+
+There were 22606 flights in Jan 2018 flewed from the three airports in bay area.
+```{r}
+dim(bay_flight01)
+```
+
+
+```{r}
+sfoflights18<- bind_rows(bay_flight01,bay_flight02,bay_flight03,bay_flight04,bay_flight05)
+dim(sfoflights18)
+head(sfoflights18)
+
+
+```
+
+##Question3.
+
+**Answer:**
+
+```{r}
+nycflights13_names <- tribble(
+  ~columns, ~description,
+  'year', 'Date of departure. - year',
+  'month', 'Date of departure. - month',
+  'day', 'Date of departure.',
+  'dep_time', 'Actual departure and arrival times (format HHMM or HMM), local tz.',
+  'arr_time', 'Actual departure and arrival times (format HHMM or HMM), local tz.',
+  'sched_dep_time', 'Scheduled departure and arrival times (format HHMM or HMM), local tz.',
+  'sched_arr_time', 'Scheduled departure and arrival times (format HHMM or HMM), local tz.',
+  'dep_delay', 'Departure and arrival delays, in minutes. Negative times represent early departures/arrivals.',
+  'arr_delay', 'Departure and arrival delays, in minutes. Negative times represent early departures/arrivals.',
+  'carrier', 'Two letter carrier abbreviation. See airlines to get name.',
+  'flight', 'Flight number.',
+  'tailnum', 'Plane tail number. See planes for additional metadata.',
+  'origin', 'Origin and destination. See airports for additional metadata.',
+  'dest', 'Origin and destination. See airports for additional metadata.',
+  'air_time', 'Amount of time spent in the air, in minutes.',
+  'distance', 'Distance between airports, in miles.',
+  'hour', 'Time of scheduled departure broken into hour and minutes. - hour',
+  'minute', 'Time of scheduled departure broken into hour and minutes. minute',
+  'time_hour', 'Scheduled date and hour of the flight as a POSIXct date. Along with origin, can be used to join flights data to weather data.'
+)
+
+kable(nycflights13_names)
+```
+
+
+
+
+```{r}
+X <- read_html("readme.html")
+
+head(X)
+
+# Remove the top four lines.
+
+X <- X[-c(1,2,3,4,5)]
+
+head(X)
+
+# Now create a matrix that contains the variable names in the first column and the description in the second column.
+
+Y <- matrix(X[1:218], ncol = 2, byrow = TRUE)
+
+head(Y)
+
+on_time_names <- tibble(columns = Y[,1], description = Y[,1])
+on_time_names
+ 
+on_time_names <- on_time_names %>% mutate(columns = tolower(columns))
+head(on_time_names)
+
+```
+
+##Question4.
+
+**Answer:**
+
+Below is the table with the new variables available in flightsfo18 dataset.
+```{r}
+
+sfoflights18_names <- tribble(
+  ~columns, ~description,
+  'Quarter', 'Quarter (1-4)',
+  'DayOfWeek', 'Day of Week',
+  'OriginCityName', 'Origin Airport, City Name',
+  'OriginStat', 'Origin Airport, State Code',
+  'DepDelayMinutes','Difference in minutes between scheduled and actual departure time. Early departures set to 0.',
+  'DestCityName', 'Destination Airport, City Name',
+  'DestState', 'estination Airport, State Code.',
+  'DepDel15', 'Departure Delay Indicator, 15 Minutes or More (1=Yes).',
+  'ArrDelayMinutes', 'Difference in minutes between scheduled and actual arrival time. Early arrivals set to 0.',
+  'ArrDel15', 'Arrival Delay Indicator, 15 Minutes or More (1=Yes'
+  )
+
+kable(sfoflights18_names)
+```
+
+##Question5(4.2).
+
+**Answer:**
+
+In the data for Jan-May 2018, March had the highes cancelled flights. Feb had the lowest cancelled flights. Maybe because of the rainy weather in 2018 from my memory.
+```{r}
+sfoflights18%>%select(Month,ArrDelay)%>% group_by(Month)%>%skim()
+```
+
+##Question5(4.3).
+
+**Answer:**
+
+Flight N633VA travelled the most.
+
+```{r}
+sfoflights18 %>%select(Tail_Number) %>%group_by(Tail_Number)%>%count(count=n()) %>%arrange(desc(n))
+```
+```{r}
+sfoflights18 %>%select(Year, Month, Tail_Number) %>%filter(Tail_Number=="N633VA") %>%group_by(Year,Month) %>%summarise(count=n())
+```
+
+```{r}
+
+sfoflights18 %>%filter(Tail_Number=="N633VA") %>%group_by(Month)%>%tally()%>%ggplot(aes(x= Month, y=n))+geom_point()+geom_line()
+```
+
+Number of Trips per Week 
+
+```{r}
+sfoflights1 <- sfoflights18 %>% mutate( ymd = as.Date(paste(Year, Month, DayofMonth, sep='-'))) %>%
+  mutate( week = as.integer(format(as.Date(ymd), "%U"))  ) %>% 
+  filter(Tail_Number=="N633VA") %>%
+  group_by(week) %>%
+  tally()
+sfoflights1
+sfoflights1%>% ggplot(aes(x=week, y=n))+geom_point()+geom_line()+geom_smooth()
+```
+
+##Question5(4.4).
+
+**Answer:**
+3,322 planes flew from SFO are included in planes table.
+
+```{r}
+planes_1<- planes%>%select(tailnum,year)%>%group_by(year)%>%arrange((year))
+planes_1
+planes2 <-planes %>%rename( year_m =year )
+planes2%>% left_join(sfoflights18, by= c("tailnum"="Tail_Number"))%>%group_by(tailnum)%>% count(n=n())
+```
+
+
+
